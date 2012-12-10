@@ -16,6 +16,8 @@
 
 package com.jfinal.plugin.activerecord;
 
+import static com.jfinal.plugin.activerecord.DbKit.NULL_PARA_ARRAY;
+
 import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -28,10 +30,10 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
+
 import com.jfinal.plugin.activerecord.cache.ICache;
-import static com.jfinal.plugin.activerecord.DbKit.NULL_PARA_ARRAY;
 
 /**
  * Model.
@@ -281,19 +283,29 @@ public abstract class Model<M extends Model> implements Serializable {
 		int result = 0;
 		try {
 			conn = DbKit.getConnection();
-			if (DbKit.dialect.isOracle())
-				pst = conn.prepareStatement(sql.toString(), new String[]{tableInfo.getPrimaryKey()});
-			else
+//			if (DbKit.dialect.isOracle())
+//				pst = conn.prepareStatement(sql.toString(), new String[]{tableInfo.getPrimaryKey()});
+//			else
+//				pst = conn.prepareStatement(sql.toString(), Statement.RETURN_GENERATED_KEYS);
+//			
+//			DbKit.dialect.fillStatement(pst, paras);
+//			// for (int i=0, size=paras.size(); i<size; i++) {
+//				// pst.setObject(i + 1, paras.get(i));
+//			// }
+//			
+//			result = pst.executeUpdate();
+//			// if (isSupportAutoIncrementKey)
+//				getGeneratedKey(pst, tableInfo);	// getGeneratedKey(pst, tableInfo.getPrimaryKey());
+			boolean isSupportAutoIncrementKey = !DbKit.dialect.isOracle();
+			if (isSupportAutoIncrementKey)
 				pst = conn.prepareStatement(sql.toString(), Statement.RETURN_GENERATED_KEYS);
-			
-			DbKit.dialect.fillStatement(pst, paras);
-			// for (int i=0, size=paras.size(); i<size; i++) {
-				// pst.setObject(i + 1, paras.get(i));
-			// }
-			
+			else
+				pst = conn.prepareStatement(sql.toString());
+			for (int i=0, size=paras.size(); i<size; i++) {
+				pst.setObject(i + 1, paras.get(i));
+			}
 			result = pst.executeUpdate();
-			// if (isSupportAutoIncrementKey)
-				getGeneratedKey(pst, tableInfo);	// getGeneratedKey(pst, tableInfo.getPrimaryKey());
+			
 			getModifyFlag().clear();
 			return result >= 1;
 		} catch (Exception e) {
