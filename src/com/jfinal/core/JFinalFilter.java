@@ -17,6 +17,7 @@
 package com.jfinal.core;
 
 import java.io.IOException;
+
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -25,6 +26,7 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import com.jfinal.config.Constants;
 import com.jfinal.config.JFinalConfig;
 import com.jfinal.handler.Handler;
@@ -58,8 +60,9 @@ public final class JFinalFilter implements Filter {
 		HttpServletRequest request = (HttpServletRequest)req;
 		HttpServletResponse response = (HttpServletResponse)res;
 		request.setCharacterEncoding(encoding);
-		
-		String target = request.getServletPath();
+//		String target = request.getServletPath();
+		String target = request.getRequestURI().
+		        substring(request.getContextPath().length());
 		boolean[] isHandled = {false};
 		try {
 			handler.handle(target, request, response, isHandled);
